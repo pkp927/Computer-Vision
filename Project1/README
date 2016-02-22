@@ -1,0 +1,88 @@
+To run the program, first compile it and then run it as follows:
+./Project1 files/data.txt images/
+
+first command line argument gives location of data file
+second command line argument gives location where output image needs to be stored
+
+				PROJECT REPORT
+
+Reading data from file:
+The program reads the data file and stores the the values of xa0, ya0, za0, xac, yac, zac, focal length, number of edges and number of vertices in corresponding variables. The coordinates of each vertex is stored in an array of struct vertex that is defined in program. The list of vertices connected together is stored in an array of struct edge that is defined in program.
+
+struct Vertex{
+	double x, y, z;
+	bool invalid;
+};
+
+struct Edge{
+	int v1, v2;
+};
+
+Imaging Geometry:
+In order to get image coordinates, first convert the coordinates of vertices from world coordinate system to camera coordinate system, which require translation and rotation matrix, then apply perspective matrix to get image coordinates.
+
+Translation matrix T ( origin (0,0,0) to origin (xa0,ya0,za0) ): 
+
+				1    0    0    -1*xa0
+				0    1    0    -1*ya0
+				0    0    1    -1*za0
+				0    0    0     1
+
+Rotation matrix R:
+
+				uxx    uxy    uxz    0
+				uyx    uyy    uyz    0
+				uzx    uzy    uzz    0
+        		      0       0      0     1
+where (uxx, uxy, uxy), (uyx, uyy, uyz) and (uzx, uzy, uzz) are unit xc, yc, zc vectors of camera coordiante system.
+
+zc vector can be calculated from two points (xa0, ya0, za0) and (xac, yac, zac) that lie on z-axis of camera. It is calculated as below:
+	double zx, zy, zz;
+	double denom = sqrt(pow((xac-xa0),2)+pow((yac-ya0),2)+pow((zac-za0),2));
+	zx = (xac-xa0)/denom;
+	zy = (yac-ya0)/denom;
+	zz = (zac-za0)/denom;
+
+xc vector is parallel to x-y plane of world coordinate and perpendicular to zc vector that has been calculated above. It is calculated as below:
+	double xx, xy, xz;
+	if(zx||zy){
+		xx = (zy)/sqrt(pow(zx,2)+pow(zy,2));
+		xy = -1*(zx)/sqrt(pow(zx,2)+pow(zy,2));
+	}else{
+		xx = 1;
+		xy = 0;
+	}
+	xz = 0;
+
+yc vector is perpendicular to xc and zc vector so can be calculated as below:
+	double yx, yy, yz;
+	yx = zy*xz - xy*zz;
+	yy = -1*(zx*xz-xx*zz);
+	yz = zx*xy - xx*zy;
+
+Perspective matrix P (considering image plane center as origin of camera coordinate system):
+
+				1    0    0    0
+				0    1    0    0
+				0    0    1    0
+				0    0   -1/f  1
+				
+First transformations are applied to object vertices to convert to camera vertices.
+                                   C = R*T*O 	
+where C is homogeneous vector of camera coordinates and O is homogeneous vector of object coordinates.			
+Then, camera vertices are checked, if there z value is less than f, it means it lies behind camera and it is invalidated.
+Then, camera vertices are converted to image vertices by applying perspective.
+					      I = P*C 
+
+It is rescaled to 256*256 image using following formula:
+                  new = r_min + (r_max - r_min)*(old - min)/(max – min)
+where r_min = 0, r_max = 256, min = -1, max = +1 
+as image plane is limited in extent from -1 to +1
+
+Image is created as Mat image = Mat::zeros( 256, 256, CV_8UC3 );
+so the points that lie outside image plane extent are automatically not visible in the image.
+
+Also, if x and y coordinates are coming out to be at infinity, then they are changed to -1 for NAN, -1 for INFINITY and 256 for -INFINITY for better plotting of image.
+
+Challenges:
+The main challenge was to find image for object that is half inside and half outside the camera. In that case, if a line of stick object passes through the focal plane then its intersection point is calculated and projected through the camera onto the image plane to draw the image.

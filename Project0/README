@@ -1,0 +1,34 @@
+The program can be run using following command:
+./DisplayImage ../images/lena.png ../images/sample.avi ../images/
+where
+../images/lena.png is source image
+../images/sample.avi is source video
+../images/ is output folder
+
+It will ask for paramters during runtime after entering those
+accordingly, it will display inage in a window. To go to next part,
+you need to press esc and it will run next part in the
+following manner.
+
+1. Basic Image Operations
+Enter the dimensions of ROI(x,y):
+25
+25
+3. Basic Image Manipulation Operations
+a. Averaging
+Enter the window size(x,y):
+3
+3
+b. Median Filtering
+Enter the window size(odd x):
+5
+c. Histogram Equalization
+d. Thresholding
+Enter the threshold value(0-255):
+75
+4. Basic Image Analysis Operation
+Edge Detection
+2. Basic Video Operations
+Enter the dimensions of ROI(x,y):
+100
+100

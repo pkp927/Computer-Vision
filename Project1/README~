@@ -1,0 +1,5 @@
+To run the program, first compile it and then run it as follows:
+./Project1 files/data.txt images/
+
+first command line argument gives location of data file
+second command line argument gives location where output image needs to be stored
